@@ -1,4 +1,7 @@
 extern crate chrono;
+extern crate failure;
+#[macro_use]
+extern crate failure_derive;
 extern crate reqwest;
 extern crate url_scraper;
 
@@ -94,8 +97,11 @@ pub struct AptFileDetails<'a> {
 
 }
 
+#[derive(Debug, Fail)]
 pub enum Error {
+    #[fail(display = "error while scraping a page: {}", why)]
     Scraper { why: url_scraper::Error },
+    #[fail(display = "error while requesting content: {}", why)]
     Request { why: reqwest::Error }
 }
 
