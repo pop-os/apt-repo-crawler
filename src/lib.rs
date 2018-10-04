@@ -1,7 +1,9 @@
+extern crate chrono;
 extern crate reqwest;
 extern crate url_scraper;
 
-use reqwest::{Client, header::CONTENT_TYPE, Url};
+use chrono::{DateTime, FixedOffset};
+use reqwest::{Client, header::{CONTENT_LENGTH, CONTENT_TYPE, LAST_MODIFIED}, Url};
 use url_scraper::UrlScraper;
 
 pub struct Crawler {
@@ -22,11 +24,22 @@ impl Crawler {
 
             // Check the content type to determine if we should follow the link, or that we've found a file.
             let head = self.client.head(url.clone()).send()?;
+            let headers = head.headers();
+
             if let Some(content_type) = head.headers().get(CONTENT_TYPE).and_then(|c| c.to_str().ok()) {
                 if content_type.starts_with("text/html") {
                     self.scrape(url.as_str(), func)?;
                 } else {
-                    if ! func(AptFile { url }) { break }
+                    let length: u64 = headers.get(CONTENT_LENGTH)
+                        .and_then(|c| c.to_str().ok())
+                        .and_then(|c| c.parse().ok())
+                        .unwrap_or(0);
+                    
+                    let modified = headers.get(LAST_MODIFIED)
+                        .and_then(|c| c.to_str().ok())
+                        .and_then(|c| DateTime::parse_from_rfc2822(c).ok());
+
+                    if ! func(AptFile { url, length, modified }) { break }
                 }
             }
         }
@@ -37,6 +50,8 @@ impl Crawler {
 
 pub struct AptFile {
     pub url: Url,
+    pub length: u64,
+    pub modified: Option<DateTime<FixedOffset>>
 }
 
 impl AptFile {

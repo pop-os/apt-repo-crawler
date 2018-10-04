@@ -16,7 +16,8 @@ pub fn main() {
 
     for path in rx{
         if let Some(desc) = path.get_details() {
-            println!("{}", path.url);
+            println!("URL: {}", path.url);
+            println!("Length: {}, Last Modified: {:?}", path.length, path.modified);
             println!("name: {:#?}", desc);
         }
     }
