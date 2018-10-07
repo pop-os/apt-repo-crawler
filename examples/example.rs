@@ -1,24 +1,21 @@
 extern crate apt_repo_crawler;
 
-use apt_repo_crawler::Crawler;
-use std::sync::mpsc::channel;
-use std::thread;
+use apt_repo_crawler::*;
+use std::sync::Arc;
+
+pub struct Filter;
+
+impl AptPackageFilter for Filter {
+    fn validate(&self, package: AptPackage) -> bool {
+        package.extension == "deb"
+    }
+}
 
 pub fn main() {
-    let (tx, rx) = channel();
+    let crawler = AptCrawler::new("http://apt.pop-os.org/".into())
+        .filter(Arc::new(Filter));
 
-    thread::spawn(move || {
-        Crawler::new().scrape(
-            "http://apt.pop-os.org/proprietary/pool/bionic/",
-            &mut |url| tx.send(url).is_ok()
-        )
-    });
-
-    for path in rx{
-        if let Some(desc) = path.get_details() {
-            println!("URL: {}", path.url);
-            println!("Length: {}, Last Modified: {:?}", path.length, path.modified);
-            println!("name: {:#?}", desc);
-        }
+    for file in crawler.crawl() {
+        println!("{:#?}", file);
     }
 }
