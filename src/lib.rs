@@ -13,9 +13,9 @@ pub struct AptCrawler {
 }
 
 impl AptCrawler {
-    pub fn new(repo: String) -> Self {
+    pub fn new(repos: impl Into<CrawlerSource>) -> Self {
         AptCrawler {
-            crawler: Crawler::new(repo)
+            crawler: Crawler::new(repos)
         }
     }
 

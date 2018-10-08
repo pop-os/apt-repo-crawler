@@ -12,10 +12,13 @@ impl AptPackageFilter for Filter {
 }
 
 pub fn main() {
-    let crawler = AptCrawler::new("http://apt.pop-os.org/".into())
-        .filter(Arc::new(Filter));
+    let crawler = AptCrawler::new(vec![
+            "http://apt.pop-os.org/".to_owned(),
+            "http://ppa.launchpad.net/mozillateam/ppa/ubuntu/pool/main/".to_owned()
+        ]).filter(Arc::new(Filter));
 
     for file in crawler.crawl() {
         println!("{:#?}", file);
+        println!("{:#?}", AptPackage::from_str(filename_from_url(file.url.as_str())));
     }
 }
