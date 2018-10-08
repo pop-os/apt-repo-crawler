@@ -1,6 +1,8 @@
 extern crate chrono;
 extern crate url_crawler;
 
+pub use url_crawler::filename_from_url;
+
 use chrono::{DateTime, FixedOffset};
 use std::fmt;
 use std::sync::Arc;
@@ -67,6 +69,7 @@ pub trait AptPackageFilter: Send + Sync {
     fn validate(&self, filter: AptPackage) -> bool;
 }
 
+#[derive(Debug)]
 pub struct AptPackage<'a> {
     pub name: &'a str,
     pub version: &'a str,
